@@ -75,8 +75,7 @@ export function buildToolRegistry(
             tenantId: server.tenantId,
             name: server.name,
             endpoint: server.endpoint,
-            authType: server.authType,
-            headers: server.headers
+            authConfig: server.authConfig
           },
           definition: tool
         },

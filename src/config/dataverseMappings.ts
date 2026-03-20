@@ -1,95 +1,175 @@
-export const dataverseMappings = {
-  entities: {
-    agent: "crd_agent",
-    agentVersion: "crd_agentversion",
-    agentSkill: "crd_agentskill",
-    skillVersion: "crd_skillversion",
-    agentMcp: "crd_agentmcp",
-    mcpServer: "crd_mcpserver",
-    mcpTool: "crd_mcptool",
-    apiKey: "crd_apikey",
-    conversation: "crd_conversation",
-    message: "crd_message",
-    executionLog: "crd_executionlog"
-  },
-  common: {
-    id: "crd_id",
-    tenantId: "crd_tenantid",
-    name: "crd_name",
-    createdOn: "createdon"
-  },
+/**
+ * Dataverse field mappings — Phase 2 aligned with real meg_* schema.
+ *
+ * Naming convention for lookups:
+ *   - Column name in Dataverse:  meg_magent           (navigation property)
+ *   - Read-back value property:  _meg_magent_value     (GUID resolved by Web API)
+ *   - Write binding property:    meg_magent@odata.bind (used when creating/updating records)
+ *
+ * Tables without a direct meg_tenantid field enforce tenant isolation
+ * through their parent relationship chain.
+ */
+
+/* ------------------------------------------------------------------ */
+/*  Choice-value constants                                            */
+/* ------------------------------------------------------------------ */
+
+export const AgentStatus = {
+  Draft: 862070000,
+  Active: 862070001,
+  Disabled: 862070002
+} as const;
+
+export const SkillType = {
+  HTTP: 862070000,
+  Function: 862070001,
+  Other: 862070002
+} as const;
+
+export const SkillHttpMethod = {
+  GET: 862070000,
+  POST: 862070001
+} as const;
+
+export const MessageRole = {
+  user: 862070000,
+  assistant: 862070001,
+  tool: 862070002
+} as const;
+
+/* ------------------------------------------------------------------ */
+/*  Entity-set / table logical names (used in OData URLs)             */
+/* ------------------------------------------------------------------ */
+
+export const entities = {
+  agent: "meg_magents",
+  agentVersion: "meg_agentversions",
+  agentSkill: "meg_agentskills",
+  skill: "meg_magentskills",
+  skillVersion: "meg_skillinformations",
+  agentMcp: "meg_agentmcps",
+  mcpServer: "meg_mcpservers",
+  mcpTool: "meg_mcptools",
+  apiKey: "meg_agentkeies",
+  conversation: "meg_conversations",
+  message: "meg_messages",
+  executionLog: "meg_executionlogs"
+} as const;
+
+/* ------------------------------------------------------------------ */
+/*  Per-table column mappings                                         */
+/* ------------------------------------------------------------------ */
+
+export const fields = {
   agent: {
-    id: "crd_agentid",
-    activeVersionLookup: "_crd_activeversion_value",
-    name: "crd_name",
-    instructions: "crd_instructions"
+    id: "meg_magentid",
+    tenantId: "meg_tenantid",
+    name: "meg_name",
+    description: "meg_description",
+    status: "meg_status"
   },
   agentVersion: {
-    id: "crd_agentversionid",
-    agentLookup: "_crd_agent_value",
-    name: "crd_name",
-    systemPrompt: "crd_systemprompt"
+    id: "meg_agentversionid",
+    agentLookup: "_meg_magent_value",
+    agentBind: "meg_MAgent@odata.bind",
+    name: "meg_name",
+    systemPrompt: "meg_systemprompt",
+    statecode: "statecode",
+    model: "meg_model",
+    maxTokens: "meg_maxtokens",
+    temperature: "meg_temperature",
+    toolSchema: "meg_toolsschema"
   },
   agentSkill: {
-    id: "crd_agentskillid",
-    agentVersionLookup: "_crd_agentversion_value",
-    skillVersionLookup: "_crd_skillversion_value"
+    id: "meg_agentskillid",
+    name: "meg_name",
+    agentVersionLookup: "_meg_agentinformation_value",
+    agentVersionBind: "meg_AgentInformation@odata.bind",
+    skillVersionLookup: "_meg_skill_value",
+    skillVersionBind: "meg_Skill@odata.bind",
+    order: "meg_order",
+    isRequired: "meg_isrequired"
+  },
+  skill: {
+    id: "meg_magentskillid",
+    tenantId: "meg_tenantid",
+    name: "meg_name",
+    description: "meg_description",
+    type: "meg_type"
   },
   skillVersion: {
-    id: "crd_skillversionid",
-    name: "crd_name",
-    description: "crd_description",
-    type: "crd_type",
-    url: "crd_url",
-    method: "crd_method",
-    headers: "crd_headers",
-    inputSchema: "crd_inputschema"
+    id: "meg_skillinformationid",
+    skillLookup: "_meg_magentskill_value",
+    skillBind: "meg_MAgentSkill@odata.bind",
+    name: "meg_name",
+    endpoint: "meg_endpoint",
+    method: "meg_method",
+    headers: "meg_headers",
+    inputSchema: "meg_inputschemas",
+    authConfig: "meg_authconfig",
+    outputSchema: "meg_outputschemas"
   },
   agentMcp: {
-    id: "crd_agentmcpid",
-    agentVersionLookup: "_crd_agentversion_value",
-    mcpServerLookup: "_crd_mcpserver_value"
+    id: "meg_agentmcpid",
+    name: "meg_name",
+    agentVersionLookup: "_meg_agentinformation_value",
+    agentVersionBind: "meg_AgentInformation@odata.bind",
+    mcpServerLookup: "_meg_mcpserver_value",
+    mcpServerBind: "meg_MCPServer@odata.bind"
   },
   mcpServer: {
-    id: "crd_mcpserverid",
-    name: "crd_name",
-    endpoint: "crd_endpoint",
-    authType: "crd_authtype",
-    headers: "crd_headers"
+    id: "meg_mcpserverid",
+    tenantId: "meg_tenantid",
+    name: "meg_name",
+    endpoint: "meg_endpoint",
+    authConfig: "meg_authconfig"
   },
   mcpTool: {
-    id: "crd_mcptoolid",
-    serverLookup: "_crd_mcpserver_value",
-    name: "crd_name",
-    description: "crd_description",
-    path: "crd_path",
-    method: "crd_method",
-    inputSchema: "crd_inputschema"
+    id: "meg_mcptoolid",
+    serverLookup: "_meg_mcpserver_value",
+    name: "meg_name",
+    description: "meg_description",
+    inputSchema: "meg_inputschemas",
+    outputSchema: "meg_outputschemas"
   },
   apiKey: {
-    id: "crd_apikeyid",
-    key: "crd_key",
-    isActive: "crd_isactive",
-    name: "crd_name"
+    id: "meg_agentkeyid",
+    agentLookup: "_meg_magent_value",
+    key: "meg_key",
+    name: "meg_name"
   },
   conversation: {
-    id: "crd_conversationid",
-    agentLookup: "_crd_agent_value",
-    externalId: "crd_externalid"
+    id: "meg_conversationid",
+    name: "meg_name",
+    agentLookup: "_meg_magent_value",
+    agentBind: "meg_MAgent@odata.bind",
+    context: "meg_context",
+    userEmail: "meg_useremail"
   },
   message: {
-    id: "crd_messageid",
-    conversationLookup: "_crd_conversation_value",
-    role: "crd_role",
-    content: "crd_content",
-    traceId: "crd_traceid"
+    id: "meg_messageid",
+    name: "meg_name",
+    conversationLookup: "_meg_magentconversation_value",
+    conversationBind: "meg_MAgentConversation@odata.bind",
+    role: "meg_role",
+    content: "meg_content",
+    toolName: "meg_toolname"
   },
   executionLog: {
-    id: "crd_executionlogid",
-    traceId: "crd_traceid",
-    status: "crd_status",
-    details: "crd_details"
+    id: "meg_executionlogid",
+    name: "meg_name",
+    traceId: "meg_traceid",
+    agentLookup: "_meg_magent_value",
+    agentBind: "meg_MAgent@odata.bind",
+    input: "meg_input",
+    output: "meg_output",
+    toolsUsed: "meg_toolsused"
   }
 } as const;
 
+/* ------------------------------------------------------------------ */
+/*  Backward-compat re-export so old imports keep compiling            */
+/* ------------------------------------------------------------------ */
+
+export const dataverseMappings = { entities, fields } as const;
 export type DataverseMappings = typeof dataverseMappings;
