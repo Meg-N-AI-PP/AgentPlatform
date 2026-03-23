@@ -80,6 +80,7 @@ export interface MCPServerDefinition {
   tenantId?: string;
   name: string;
   endpoint: string;
+  /** Supports headers plus optional MCP settings like mode, rpcMethod, protocolVersion, initialize */
   authConfig?: Record<string, unknown>;
   tools: MCPToolDefinition[];
 }

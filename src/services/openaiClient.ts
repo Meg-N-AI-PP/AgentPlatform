@@ -169,10 +169,12 @@ class OpenAIClient {
     options?: LLMCallOptions
   ): Promise<Stream<OpenAI.Chat.Completions.ChatCompletionChunk>> {
     try {
-      const stream = await this.client.chat.completions.create({
+      const requestBody = {
         ...buildChatCompletionBody(messages, tools, options),
         stream: true
-      });
+      } as OpenAI.Chat.ChatCompletionCreateParamsStreaming;
+
+      const stream = await this.client.chat.completions.create(requestBody);
 
       return stream;
     } catch (error: any) {
@@ -180,14 +182,14 @@ class OpenAIClient {
         return this.client.chat.completions.create({
           ...buildChatCompletionBody(messages, tools, options, { omitTemperature: true }),
           stream: true
-        });
+        } as OpenAI.Chat.ChatCompletionCreateParamsStreaming);
       }
 
       if (isUnsupportedParamError(error, "max_tokens")) {
         return this.client.chat.completions.create({
           ...buildChatCompletionBody(messages, tools, options, { useMaxCompletionTokens: true }),
           stream: true
-        });
+        } as OpenAI.Chat.ChatCompletionCreateParamsStreaming);
       }
 
       const status = error?.status ?? error?.response?.status;
